@@ -1,4 +1,4 @@
-# containers
+# Noc Redua
 
 Ambiente de monitoramento completo utilizando Docker e Docker Compose.
 
@@ -39,8 +39,8 @@ Os containers serão criados e configurados automaticamente.
 
 ## Acesso
 
-- **Zabbix Web:** `http://<IP-DO-SERVIDOR>:8080`
-- **Grafana Web:** `http://<IP-DO-SERVIDOR>:3000`  
+- **Zabbix Web:** `http://localhost:8080`
+- **Grafana Web:** `http://localhost:3000`
   - Usuário padrão: `admin`  
   - Senha padrão: `admin`
 
