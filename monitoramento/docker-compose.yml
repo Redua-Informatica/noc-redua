@@ -94,6 +94,26 @@ services:  # Definição dos containers
     networks:
       - zabbix-network
 
+  omada-controller:
+    image: mbentley/omada-controller:${OMADA_VERSION}
+    container_name: omada-controller
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - ./omada/data:/opt/tplink/EAPController/data
+      - ./omada/logs:/opt/tplink/EAPController/logs
+      - ./omada/work:/opt/tplink/EAPController/work
+      - ./omada/backup:/opt/tplink/EAPController/backup
+    restart: unless-stopped
+    ports:
+      - "8088:8088"  # Porta HTTP do Omada Controller
+      - "8043:8043"  # Porta HTTPS do Omada Controller
+      - "27017:27017"  # Porta do MongoDB (banco de dados do Omada)
+      - "29810:29810/udp"  # Porta UDP para descoberta de dispositivos
+      - "29811:29811"  # Porta TCP para comunicação com dispositivos
+    networks:
+      - zabbix-network
+
 networks:
   zabbix-network:
     driver: bridge
