@@ -9,10 +9,13 @@ services:  # Definição dos containers
       MYSQL_PASSWORD: "${MYSQL_PASSWORD}"        # Senha do usuário
       MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"  # Senha do root do MySQL
     command: --character-set-server=utf8 --collation-server=utf8_bin  # Charset e collation
+    ports:
+            - "3306:3306"
     volumes:
       - mysql-data:/var/lib/mysql  # Volume persistente do MySQL
     restart: unless-stopped
-    network_mode: host  # Usa rede do host diretamente (sem NAT)
+    networks:
+      - zabbix-network  # Usa rede do host diretamente (sem NAT)
 
   zabbix-server:
     image: zabbix/zabbix-server-mysql:${ZABBIX_VERSION}
@@ -39,7 +42,10 @@ services:  # Definição dos containers
     depends_on:
       - mysql-server  # Garante que o MySQL suba primeiro
     restart: unless-stopped
-    network_mode: host
+    ports:
+      - "10051:10051"  # Porta do Zabbix Server
+    networks:
+      - zabbix-network
 
   zabbix-web:
     image: zabbix/zabbix-web-apache-mysql:${ZABBIX_VERSION}
@@ -56,7 +62,11 @@ services:  # Definição dos containers
     depends_on:
       - zabbix-server
     restart: unless-stopped
-    network_mode: host
+    ports:
+      - "8080:8080"    # Porta HTTP
+      - "8443:8443"    # Porta HTTPS
+    networks:
+      - zabbix-network
 
   zabbix-agent2:
     image: zabbix/zabbix-agent2:${ZABBIX_VERSION}
@@ -67,7 +77,8 @@ services:  # Definição dos containers
     depends_on:
       - zabbix-server
     restart: always
-    network_mode: host
+    networks:
+      - zabbix-network
 
   grafana:
     image: grafana/grafana:${GRAFANA_VERSION}
@@ -78,7 +89,34 @@ services:  # Definição dos containers
       - grafana-data:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning  # Config automática dos dashboards/datasources
     restart: unless-stopped
-    network_mode: host
+    ports:
+      - "3000:3000"  # Porta do Grafana
+    networks:
+      - zabbix-network
+
+  omada-controller:
+    image: mbentley/omada-controller:${OMADA_VERSION}
+    container_name: omada-controller
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - ./omada/data:/opt/tplink/EAPController/data
+      - ./omada/logs:/opt/tplink/EAPController/logs
+      - ./omada/work:/opt/tplink/EAPController/work
+      - ./omada/backup:/opt/tplink/EAPController/backup
+    restart: unless-stopped
+    ports:
+      - "8088:8088"  # Porta HTTP do Omada Controller
+      - "8043:8043"  # Porta HTTPS do Omada Controller
+      - "27017:27017"  # Porta do MongoDB (banco de dados do Omada)
+      - "29810:29810/udp"  # Porta UDP para descoberta de dispositivos
+      - "29811:29811"  # Porta TCP para comunicação com dispositivos
+    networks:
+      - zabbix-network
+
+networks:
+  zabbix-network:
+    driver: bridge
 
 # Volumes persistentes
 volumes:

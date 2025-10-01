@@ -1,0 +1,20 @@
+    # Ignore all files ending with .log
+    *.log
+
+    # Ignore a specific directory
+    /node_modules/
+
+    # Ignore a specific file
+    mysecret.txt
+
+    # Ignore all files in a directory except one
+    /build/*
+    !/build/important.js
+
+    # Ignore files based on their name, regardless of extension
+    temp_*
+
+    # Ignore system files (common in Mac OS)
+    .DS_Store
+	
+	.env
